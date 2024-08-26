@@ -24,9 +24,11 @@ def get_last_five_operations(file_path):
 
         operation_info = f"{date} {description}\n"
         if from_account:
-            operation_info += f"{from_account} -> {to_account}\n"
+            if 'Счет' in description:
+                from_account = f"Счет {mask_account_number(op['from'])}"
+            operation_info += f"{from_account} -> Счет {to_account}\n"
         else:
-            operation_info += f"{to_account}\n"
+            operation_info += f"Счет {to_account}\n"
         operation_info += f"{amount}\n"
         result.append(operation_info)
 
