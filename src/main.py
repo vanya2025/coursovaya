@@ -18,17 +18,24 @@ def get_last_five_operations(file_path):
     for op in last_five_operations:
         date = format_date(op['date'])
         description = op['description']
-        from_account = mask_card_number(op['from']) if 'from' in op else ''
-        to_account = mask_account_number(op['to']) if 'to' in op else ''
+        from_account = op.get('from', '')
+        to_account = op.get('to', '')
         amount = f"{op['operationAmount']['amount']} {op['operationAmount']['currency']['name']}"
 
         operation_info = f"{date} {description}\n"
+
         if from_account:
-            if 'Счет' in description:
-                from_account = f"Счет {mask_account_number(op['from'])}"
-            operation_info += f"{from_account} -> Счет {to_account}\n"
+            if from_account.lower().startswith('счет'):
+                from_account = f"Счет {mask_account_number(from_account)}"
+            else:
+                # Рассплитим карту и маскируем только номер
+                card_parts = from_account.split()
+                card_number = mask_card_number(card_parts[-1])
+                from_account = ' '.join(card_parts[:-1]) + ' ' + card_number
+            operation_info += f"{from_account} -> Счет {mask_account_number(to_account)}\n"
         else:
-            operation_info += f"Счет {to_account}\n"
+            operation_info += f"Счет {mask_account_number(to_account)}\n"
+
         operation_info += f"{amount}\n"
         result.append(operation_info)
 
